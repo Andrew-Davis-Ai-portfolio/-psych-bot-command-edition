@@ -2,7 +2,20 @@
 A calm, command-ready wellness copilot. CBT micro-tools, focus resets, journaling, and crisis guardrails. Not therapy — a clarity assistant.
 # Psych Bot — Command Edition
 ### Clarity is a command. Mindset is the control plane.
+🧠 PsychBot — Clarity Ops
+A daily mindset and decision hygiene assistant powered by ethical AI practices.
 
+✅ 1-minute check-ins (mood, stress, sleep)
+✅ Cognitive distortion spotting + fast reframes
+✅ Micro-action plans (10-min maximum)
+✅ Grounding tools: box breathing & sensory scan
+✅ Streaks + weekly review dashboard
+✅ Crisis protocol with real-world escalation
+
+🚫 No diagnosis
+🚫 No medication recommendations
+
+Clarity becomes execution. Execution becomes ecosystem.
 A calm, command-ready mental clarity copilot powered by AI.
 CBT micro-tools, focus resets, journaling, motivation feedback loops —
 Not therapy. Not diagnosis.
