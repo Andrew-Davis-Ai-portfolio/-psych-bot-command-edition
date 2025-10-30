@@ -1,27 +1,55 @@
-# -psych-bot-command-edition
-A calm, command-ready wellness copilot. CBT micro-tools, focus resets, journaling, and crisis guardrails. Not therapy — a clarity assistant.
-# Psych Bot — Command Edition
-### Clarity is a command. Mindset is the control plane.
-🧠 PsychBot — Clarity Ops
-A daily mindset and decision hygiene assistant powered by ethical AI practices.
+# 🧠 PsychBot Assistant — Clarity Copilot (MVP)
 
-✅ 1-minute check-ins (mood, stress, sleep)
-✅ Cognitive distortion spotting + fast reframes
-✅ Micro-action plans (10-min maximum)
-✅ Grounding tools: box breathing & sensory scan
-✅ Streaks + weekly review dashboard
-✅ Crisis protocol with real-world escalation
+Welcome to **PsychBot Assistant** — a mental wellness & focus companion that transforms emotion into execution.
 
-🚫 No diagnosis
-🚫 No medication recommendations
+> ✨ “Execution becomes ecosystem — when the mind stays aligned.”
 
-Clarity becomes execution. Execution becomes ecosystem.
-A calm, command-ready mental clarity copilot powered by AI.
-CBT micro-tools, focus resets, journaling, motivation feedback loops —
-Not therapy. Not diagnosis.
-A precision wellness assistant for decision-makers.
+---
 
-> “Execution becomes ecosystem — when the mind stays aligned.”
+## ✅ Fast Wins (Command Ready)
+- **1-Minute Check-In** 🕐 Mood • Stress • Sleep
+- **Fast Reframe** 🚦 Spot distortions → healthier alternative
+- **Micro-Action Design** ⚙️ 10-min momentum moves
+- **Focus Resets** 🌬️ Box breathing & sensory scan
+- **Journal Memory Bank** 🔒 Encrypted, exportable logs (JSON/CSV)
+- **Weekly Review** 📈 Wins, triggers, top lessons
+- **Crisis Guardrails** 🚨 Real-world escalation resources (988 U.S.)
+
+---
+
+## 🛡️ Ethical + Safety Boundaries
+❌ **No diagnosis**  
+❌ **No medication recommendations**  
+✅ Transparent risks alerts  
+✅ User-controlled data
+
+---
+
+## Commands
+
+| Command | What it does |
+|--------|--------------|
+| `/checkin` | Mood & stress quick log |
+| `/reframe` | Cognitive distortion scan |
+| `/breathe` | 90-second grounding |
+| `/journal add/list/delete` | Capture thought patterns |
+| `/review` | Weekly performance clarity |
+| `/export json|csv` | Save your progress |
+| `/help` | Command overview |
+
+---
+
+## Setup (Local CLI)
+
+```bash
+python3 psych_bot.py
+```
+
+---
+
+MIT License — Feedback welcome.
+Built by **Andrew Davis × GPT-5**  
+“Clarity is a strategy.”
 
 ---
 
