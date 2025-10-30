@@ -13,21 +13,6 @@ A precision wellness assistant for decision-makers.
 ---
 
 ## Features (MVP v1.0.0)
-**New commands**
-- `/reframe <thought>` → detects likely cognitive distortion and returns a Reframe Card (balanced view, 10-min action, IF-THEN fallback). Logs to journal.
-- `/export json|csv` → exports all check-ins and entries to `/exports/psych_export_YYYYMMDD_HHMM.(json|csv)`.
-| Module | Purpose | Commands |
-|--------|---------|----------|
-| Pulse Check | Mood, stress, sleep tracking | /checkin |
-| Thought Reframe | Detect cognitive distortions & rewrite | /reframe |
-| Focus Reset | Breathing + grounding protocols | /breathe |
-| Journaling Vault | Personal insights storage | /journal |
-| Weekly Debrief | Wins, lessons, patterns | /review |
-| Crisis Guardrails | Redirect to human support | Auto-protect |
-
-Local JSON storage — data stays with the user.
-
----
 
 ## Why This Matters
 
