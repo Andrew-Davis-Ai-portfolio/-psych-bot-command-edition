@@ -28,7 +28,9 @@ Directly aligned with Project Checkmate System.
 ---
 
 ## Architecture
-
+**New commands**
+- `/reframe <thought>` → detects likely cognitive distortions + suggests a healthier reframe
+- `/export json|csv` → exports all check-ins and journal entries into local files
 - Python CLI bot
 - Modular command parser
 - Local encrypted storage (Phase 2)
