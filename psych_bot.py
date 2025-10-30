@@ -506,3 +506,273 @@ def main():
 
 if __name__ == "__main__":
     main()dr
+    #!/usr/bin/env python3
+"""
+Psych Bot — Command Edition (MVP)
+Calm wellness copilot. Not a therapist.
+
+Commands
+- /checkin (mood/stress/sleep)
+- /reframe <thought>
+- /breathe
+- /journal add|list|delete
+- /review
+- /export json|csv
+- /help
+
+Data is stored locally in psych_data.json
+Crisis guardrails: shows resources on risk keywords.
+"""
+
+import json, os, re, csv, sys
+import datetime as dt
+from pathlib import Path
+
+DATA_PATH = Path("psych_data.json")
+EXPORT_DIR = Path("exports")
+EXPORT_DIR.mkdir(exist_ok=True)
+
+# --- Crisis Guardrails -------------------------------------------------------
+RISK_TERMS = [
+    r"\bsuicide\b", r"\bkill myself\b", r"\bself[- ]harm\b",
+    r"\bhurt (myself|someone)\b", r"\bno reason to live\b",
+]
+
+CRISIS_MSG = (
+    "⚠️ I’m not equipped for emergencies.\n"
+    "If you’re in immediate danger, call **911** (US) or text **988**.\n"
+    "Prefer links? https://988lifeline.org  — Reach a trusted person now."
+)
+
+def risk_screen(text: str) -> bool:
+    if not text: return False
+    text = text.lower()
+    return any(re.search(p, text) for p in RISK_TERMS)
+
+# --- Persistence --------------------------------------------------------------
+def _load():
+    if DATA_PATH.exists():
+        with open(DATA_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {
+        "user_profile": {"values": [], "supports": []},
+        "check_ins": [],
+        "entries": [],
+        "system_score": {"weekly": 0, "streak_days": 0}
+    }
+
+def _save(state):
+    with open(DATA_PATH, "w", encoding="utf-8") as f:
+        json.dump(state, f, indent=2)
+
+STATE = _load()
+
+def _now_iso():
+    return dt.datetime.now().isoformat(timespec="minutes")
+
+# --- Utilities ----------------------------------------------------------------
+DISTORTIONS = {
+    "all-or-nothing": ["always", "never", "perfect", "ruined"],
+    "overgeneralization": ["everyone", "no one", "every time", "nothing works"],
+    "mind reading": ["they think", "they must think", "they probably"],
+    "catastrophizing": ["disaster", "ruined", "impossible", "hopeless"],
+    "should statements": ["should", "must", "have to"],
+}
+
+def guess_distortion(text: str) -> str:
+    t = text.lower()
+    for label, cues in DISTORTIONS.items():
+        if any(cue in t for cue in cues):
+            return label
+    return "unknown"
+
+def reframe_thought(thought: str) -> dict:
+    """Return a structured CBT-style reframe."""
+    distortion = guess_distortion(thought)
+    prompts = {
+        "evidence_for": "List facts supporting the thought (1–3 bullets).",
+        "evidence_against": "List facts against it (1–3 bullets).",
+        "alt_view": "Write a balanced alternative thought.",
+        "next_action": "One controllable step (<10 min) you can take now.",
+        "if_then": "IF blocked, THEN small fallback you will do.",
+    }
+    # default templates
+    alt = {
+        "all-or-nothing": "Reality is a spectrum. One outcome ≠ total identity.",
+        "overgeneralization": "One sample ≠ the whole set. New attempts can yield new data.",
+        "mind reading": "I can’t know others’ minds. I can ask or test with evidence.",
+        "catastrophizing": "Even if this is hard, there are partial wins and recovery paths.",
+        "should statements": "Preferences beat rules. I can aim, adjust, and learn.",
+        "unknown": "I can check facts, consider contexts, and choose one next step."
+    }[distortion]
+
+    card = {
+        "ts": _now_iso(),
+        "input": thought,
+        "distortion": distortion,
+        "reframe": alt,
+        "prompts": prompts
+    }
+    return card
+
+# --- Commands -----------------------------------------------------------------
+def cmd_help():
+    return (
+        "🧭 Psych Bot — Command Edition\n"
+        "/checkin  → quick mood/stress/sleep capture\n"
+        "/reframe <thought>  → spot distortion & get a reframe card\n"
+        "/breathe  → 90-sec box-breathing guide\n"
+        "/journal add|list|delete  → notes vault\n"
+        "/review   → weekly wins/lessons\n"
+        "/export json|csv  → download your data\n"
+        "Note: I’m a wellness copilot, not a therapist. Crisis? Call **911** or text **988**."
+    )
+
+def cmd_checkin():
+    print("Mood 1–5? ", end="", flush=True); mood = input().strip()
+    print("Stress 1–5? ", end="", flush=True); stress = input().strip()
+    print("Sleep hours (last night)? ", end="", flush=True); sleep = input().strip()
+    entry = {"ts": _now_iso(), "mood": int(mood), "stress": int(stress), "sleep": float(sleep)}
+    STATE["check_ins"].append(entry)
+    # simple streak logic
+    today = dt.date.today()
+    if STATE["check_ins"]:
+        last = STATE["check_ins"][-1]["ts"][:10]
+        if last == today.isoformat():
+            STATE["system_score"]["streak_days"] += 1
+    _save(STATE)
+    return f"Logged ✅  mood={mood}, stress={stress}, sleep={sleep}h"
+
+def cmd_breathe():
+    return (
+        "🫁 Box Breathing (90s)\n"
+        "Inhale 4 • Hold 4 • Exhale 4 • Hold 4 — repeat 6 cycles.\n"
+        "Tip: Relax shoulders. Unclench jaw. Notice 5 things you see/hear/feel."
+    )
+
+def cmd_journal(args):
+    if not args:
+        return "Usage: /journal add <text> | /journal list | /journal delete <id>"
+    sub = args[0].lower()
+    if sub == "add":
+        text = " ".join(args[1:]).strip()
+        if not text: return "Add what? Example: /journal add Landed interview; felt proud."
+        if risk_screen(text): return CRISIS_MSG
+        item = {"id": len(STATE["entries"])+1, "ts": _now_iso(), "text": text}
+        STATE["entries"].append(item); _save(STATE)
+        return f"Added journal #{item['id']} ✅"
+    if sub == "list":
+        if not STATE["entries"]: return "No journal entries yet."
+        lines = [f"#{e['id']}  • {e['ts']}  • {e['text']}" for e in STATE["entries"][-20:]]
+        return "🗒️ Recent entries:\n" + "\n".join(lines)
+    if sub == "delete":
+        if len(args) < 2: return "Usage: /journal delete <id>"
+        try:
+            target = int(args[1])
+            before = len(STATE["entries"])
+            STATE["entries"] = [e for e in STATE["entries"] if e["id"] != target]
+            _save(STATE)
+            return "Deleted ✅" if len(STATE["entries"]) != before else "ID not found."
+        except ValueError:
+            return "ID must be a number."
+    return "Unknown subcommand. Use: add | list | delete"
+
+def cmd_review():
+    # weekly slice
+    now = dt.datetime.now()
+    week_ago = now - dt.timedelta(days=7)
+    checks = [c for c in STATE["check_ins"] if dt.datetime.fromisoformat(c["ts"]) >= week_ago]
+    if not checks:
+        return "No check-ins this week. Try /checkin to start a streak."
+    avg_mood = sum(c["mood"] for c in checks)/len(checks)
+    avg_stress = sum(c["stress"] for c in checks)/len(checks)
+    avg_sleep = sum(c["sleep"] for c in checks)/len(checks)
+    # simple “System Score”
+    score = round(max(0, min(100, 20*avg_mood - 10*avg_stress + 5*avg_sleep)))
+    STATE["system_score"]["weekly"] = score
+    _save(STATE)
+    return (
+        "📊 Weekly Review\n"
+        f"• Check-ins: {len(checks)}\n"
+        f"• Avg mood: {avg_mood:.1f}  |  Avg stress: {avg_stress:.1f}  |  Avg sleep: {avg_sleep:.1f}h\n"
+        f"• System Score: **{score} / 100**\n"
+        "Next: Log a small win in /journal, then run /reframe on anything sticky."
+    )
+
+# --- NEW: /reframe ------------------------------------------------------------
+def cmd_reframe(args):
+    if not args:
+        return "Usage: /reframe <thought>. Example: /reframe No one will hire me."
+    thought = " ".join(args).strip()
+    if risk_screen(thought): return CRISIS_MSG
+    card = reframe_thought(thought)
+    # store as entry
+    STATE["entries"].append({
+        "id": len(STATE["entries"])+1,
+        "ts": card["ts"],
+        "trigger": "thought_reframe",
+        "distortion": card["distortion"],
+        "reframe": card["reframe"],
+        "text": thought
+    })
+    _save(STATE)
+    return (
+        "🧠 Reframe Card\n"
+        f"• Distortion: **{card['distortion']}**\n"
+        f"• Balanced view: {card['reframe']}\n"
+        f"• Next step (10 min): {card['prompts']['next_action']}\n"
+        f"• IF-THEN: {card['prompts']['if_then']}"
+    )
+
+# --- NEW: /export -------------------------------------------------------------
+def cmd_export(args):
+    if not args:
+        return "Usage: /export json|csv"
+    kind = args[0].lower()
+    ts = dt.datetime.now().strftime("%Y%m%d_%H%M")
+    if kind == "json":
+        path = EXPORT_DIR / f"psych_export_{ts}.json"
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(STATE, f, indent=2)
+        return f"Exported JSON ✅ → {path}"
+    if kind == "csv":
+        path = EXPORT_DIR / f"psych_export_{ts}.csv"
+        # flatten a few useful records
+        rows = []
+        for c in STATE["check_ins"]:
+            rows.append({"type":"checkin","ts":c["ts"],"mood":c["mood"],"stress":c["stress"],"sleep":c["sleep"],"text":""})
+        for e in STATE["entries"]:
+            rows.append({"type":"entry","ts":e.get("ts",""),"mood":"","stress":"","sleep":"","text":e.get("text","")})
+        with open(path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=["type","ts","mood","stress","sleep","text"])
+            writer.writeheader(); writer.writerows(rows)
+        return f"Exported CSV ✅ → {path}"
+    return "Unknown format. Use: json | csv"
+
+# --- CLI Router ---------------------------------------------------------------
+def main():
+    print("Psych Bot ready. Type a command (or /help).")
+    while True:
+        try:
+            text = input("> ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nBye."); break
+        if not text: continue
+        if risk_screen(text):
+            print(CRISIS_MSG); continue
+
+        parts = text.split()
+        cmd, args = parts[0].lower(), parts[1:]
+
+        if cmd in ("/quit", "/exit"): print("Bye."); break
+        elif cmd == "/help": print(cmd_help())
+        elif cmd == "/checkin": print(cmd_checkin())
+        elif cmd == "/breathe": print(cmd_breathe())
+        elif cmd == "/journal": print(cmd_journal(args))
+        elif cmd == "/review": print(cmd_review())
+        elif cmd == "/reframe": print(cmd_reframe(args))      # NEW
+        elif cmd == "/export": print(cmd_export(args))        # NEW
+        else: print("Unknown. Try /help")
+
+if __name__ == "__main__":
+    main()
