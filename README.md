@@ -113,35 +113,6 @@ Built for those who refuse to break.
 # A friendly wellness copilot using CBT-style micro-tools.
 # NOT A THERAPIST. If crisis terms are detected, it will show resources.
 
-import json, csv, os, sys, time
-from pathlib import Path
-from datetime import datetime
-from textwrap import dedent
-
-APP_NAME = "Psych Bot — Command Edition"
-DATA_DIR = Path("data")
-DATA_FILE = DATA_DIR / "psych_log.json"
-
-CASUAL = {
-    "hello": "Yo! I’m Psych Bot — your clarity buddy. I’m not a therapist, but I can help you reset, reframe, and plan your next move. Type /help to see what I can do.",
-    "ack": "Got it.",
-    "ok": "All set ✅",
-    "bye": "Proud of you for checking in today. Catch you soon 👋",
-    "tip": "Pro tip: tiny actions beat perfect plans. 10 minutes > 0 minutes.",
-}
-
-CRISIS_KEYWORDS = {
-    "self_harm": ["suicide", "kill myself", "end it", "self harm", "self-harm", "hurt myself"],
-    "harm_others": ["kill them", "hurt someone", "harm others"],
-}
-
-CRISIS_MESSAGE = dedent("""
-    🚨 I’m not equipped for emergencies.
-    • If you’re in immediate danger: call 911 (US) or your local emergency number.
-    • 988 (US): Suicide & Crisis Lifeline (call/text).
-    • Reach a trusted person now.
-    When you’re safe, we can pick this up and plan a next step together. ❤️
-""").strip()
 
 
 
